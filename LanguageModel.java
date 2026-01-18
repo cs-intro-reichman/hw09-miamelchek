@@ -32,20 +32,71 @@ public class LanguageModel {
     }
 
     /** Builds a language model from the text in the given file (the corpus). */
-	public void train(String fileName) {
-		// Your code goes here
-	}
+    public void train(String fileName) {
+
+        In in = new In(fileName);
+        String corpus = in.readAll();
+
+        if (corpus.length() < windowLength + 1) {
+            return;
+        }
+
+        for (int i = 0; i <= corpus.length() - windowLength - 1; i++) {
+            String window = corpus.substring(i, i + windowLength);
+            char nextChar = corpus.charAt(i + windowLength);
+
+            List probs = CharDataMap.get(window);
+            if (probs == null) {
+                probs = new List();
+                CharDataMap.put(window, probs);
+            }
+
+            probs.update(nextChar);   
+        }
+
+        for (List probs : CharDataMap.values()) {
+            calculateProbabilities(probs);   
+        }
+
+
+    }
+
 
     // Computes and sets the probabilities (p and cp fields) of all the
 	// characters in the given list. */
 	void calculateProbabilities(List probs) {				
-		// Your code goes here
+		ListIterator it = probs.listIterator(0);
+        int total = 0;
+        // סוכמים את כל התוויום
+        while (it.hasNext()) {
+            CharData cd = it.next();
+            total += cd.count;
+        }
+        
+        double cumulative = 0.0;
+        ListIterator it2 = probs.listIterator(0);
+        while (it2.hasNext()) {
+            CharData cd2 = it2.next();
+            cd2.p = (double) cd2.count / total;
+            cumulative += cd2.p;
+            cd2.cp = cumulative;
+        }
+
+
 	}
 
     // Returns a random character from the given probabilities list.
 	char getRandomChar(List probs) {
-		// Your code goes here
-		return ' ';
+		double r = randomGenerator.nextDouble();
+        ListIterator it = probs.listIterator(0);
+        // סוכמים את כל התוויום
+        while (it.hasNext()) {
+            CharData cd = it.next();
+            if (cd.cp > r) {
+                return cd.chr;
+            }
+        }
+        return probs.listIterator(0).next().chr;
 	}
 
     /**
@@ -56,8 +107,30 @@ public class LanguageModel {
 	 * @return the generated text
 	 */
 	public String generate(String initialText, int textLength) {
-		// Your code goes here
-        return "";
+                // If initial text is shorter than windowLength, we cannot generate.
+        if (initialText.length() < windowLength) {
+            return initialText;
+        }
+
+        StringBuilder generated = new StringBuilder(initialText);
+
+        // Keep generating until reaching desired length
+        while (generated.length() < textLength) {
+
+            String window = generated.substring(generated.length() - windowLength);
+
+            List probs = CharDataMap.get(window);
+            if (probs == null) {
+                // If window not found, stop and return what we have so far
+                break;
+            }
+
+            char nextChar = getRandomChar(probs);
+            generated.append(nextChar);
+        }
+
+        return generated.toString();
+            
 	}
 
     /** Returns a string representing the map of this language model. */
@@ -71,6 +144,23 @@ public class LanguageModel {
 	}
 
     public static void main(String[] args) {
-		// Your code goes here
+            int windowLength = Integer.parseInt(args[0]);
+            String initialText = args[1];
+            int generatedTextLength = Integer.parseInt(args[2]);
+            Boolean randomGeneration = args[3].equals("random");
+            String fileName = args[4];
+
+            // Create the LanguageModel object
+            LanguageModel lm;
+            if (randomGeneration)
+                lm = new LanguageModel(windowLength);
+            else
+                lm = new LanguageModel(windowLength, 20);
+
+            // Train the model
+            lm.train(fileName);
+
+            // Generate and print text
+            System.out.println(lm.generate(initialText, generatedTextLength)); 
     }
 }
