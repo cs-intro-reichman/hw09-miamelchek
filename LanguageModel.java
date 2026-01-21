@@ -66,13 +66,14 @@ public class LanguageModel {
 	// characters in the given list. */
 	void calculateProbabilities(List probs) {				
 		ListIterator it = probs.listIterator(0);
+        if (it == null) return;
+
         int total = 0;
-        // סוכמים את כל התוויום
         while (it.hasNext()) {
             CharData cd = it.next();
             total += cd.count;
         }
-        
+
         double cumulative = 0.0;
         ListIterator it2 = probs.listIterator(0);
         while (it2.hasNext()) {

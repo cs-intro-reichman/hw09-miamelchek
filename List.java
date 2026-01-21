@@ -24,7 +24,9 @@ public class List {
 
     /** Returns the CharData of the first element in this list. */
     public CharData getFirst() {
-        // Your code goes here
+        if (first == null) {
+            return null;
+        }
         return first.cp;
     }
 
@@ -33,18 +35,22 @@ public class List {
         CharData cd = new CharData(chr);
         Node newN = new Node(cd , first);
         first = newN;
+        size++;
     }
     
     /** GIVE Textual representation of this list. */
     public String toString() {
         if (size == 0) {
-            return "";
+            return "()";
             
         }
         String str = "(";
         Node current = first;
         while (current != null) {
             str += current.toString();
+            if (current.next != null) {
+                str += " ";
+            }
             current = current.next;
         }
         str += ")";
@@ -94,6 +100,7 @@ public class List {
                 }else{
                     prev.next = current.next;
                 }
+                size--;
                 return true;
             }
             prev = current;
@@ -137,7 +144,7 @@ public class List {
     /** Returns an iterator over the elements in this list, starting at the given index. */
     public ListIterator listIterator(int index) {
 	    // If the list is empty, there is nothing to iterate   
-	    if (size == 0 || index >= size) return null;
+	    if (index < 0 || index >= size) return null;
 	    // Gets the element in position index of this list
 	    Node current = first;
 	    int i = 0;
