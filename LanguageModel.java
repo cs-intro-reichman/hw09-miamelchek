@@ -57,8 +57,6 @@ public class LanguageModel {
         for (List probs : CharDataMap.values()) {
             calculateProbabilities(probs);   
         }
-
-
     }
 
 
@@ -76,28 +74,40 @@ public class LanguageModel {
 
         double cumulative = 0.0;
         ListIterator it2 = probs.listIterator(0);
+        CharData last = null;
+
         while (it2.hasNext()) {
             CharData cd2 = it2.next();
+            last = cd2;
             cd2.p = (double) cd2.count / total;
             cumulative += cd2.p;
             cd2.cp = cumulative;
         }
 
-
+        // כדי להימנע מבעיות דיוק של double, נוודא שהאחרון תמיד מגיע ל-1.0
+        if (last != null) {
+            last.cp = 1.0;
+        }
 	}
 
     // Returns a random character from the given probabilities list.
 	char getRandomChar(List probs) {
 		double r = randomGenerator.nextDouble();
         ListIterator it = probs.listIterator(0);
+
+        CharData last = null;
+
         // סוכמים את כל התוויום
         while (it.hasNext()) {
             CharData cd = it.next();
+            last = cd;
             if (cd.cp > r) {
                 return cd.chr;
             }
         }
-        return probs.listIterator(0).next().chr;
+
+        // אם בגלל עיגול לא מצאנו cp > r, נחזיר את האחרון (ולא את הראשון)
+        return last.chr;
 	}
 
     /**
@@ -108,7 +118,7 @@ public class LanguageModel {
 	 * @return the generated text
 	 */
 	public String generate(String initialText, int textLength) {
-                // If initial text is shorter than windowLength, we cannot generate.
+        // If initial text is shorter than windowLength, we cannot generate.
         if (initialText.length() < windowLength) {
             return initialText;
         }
@@ -131,7 +141,6 @@ public class LanguageModel {
         }
 
         return generated.toString();
-            
 	}
 
     /** Returns a string representing the map of this language model. */
