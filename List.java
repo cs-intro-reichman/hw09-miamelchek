@@ -1,7 +1,7 @@
 /** A linked list of character data objects. */
 public class List {
 
-    // Points to the first node in this list [cite: 45]
+    // Points to the first node in this list
     private Node first;
 
     // The number of elements in this list
@@ -26,7 +26,7 @@ public class List {
         return first.cp;
     }
 
-    /** Adds a CharData object to the beginning of this list. [cite: 89] */
+    /** Adds a CharData object to the beginning of this list. */
     public void addFirst(char chr) {
         CharData cd = new CharData(chr);
         Node newN = new Node(cd, first);
@@ -34,25 +34,25 @@ public class List {
         size++;
     }
     
-    /** Textual representation of this list. [cite: 90-92] */
+    /** Textual representation of this list. */
     public String toString() {
         if (size == 0) {
             return "()";
         }
-        StringBuilder str = new StringBuilder("(");
+        String str = "(";
         Node current = first;
         while (current != null) {
-            str.append(current.cp.toString());
+            str += current.cp.toString();
             if (current.next != null) {
-                str.append(" ");
+                str += " ";
             }
             current = current.next;
         }
-        str.append(")");
-        return str.toString();
+        str += ")";
+        return str;
     }
 
-    /** Returns the index of the first CharData object with the given chr. [cite: 87-88] */
+    /** Returns the index of the first CharData object with the given chr. */
     public int indexOf(char chr) {
         Node current = first;
         int index = 0;
@@ -66,7 +66,7 @@ public class List {
         return -1;
     }
 
-    /** Updates the counter or adds a new CharData. [cite: 98-100] */
+    /** Updates the counter or adds a new CharData. */
     public void update(char chr) {
         int index = indexOf(chr);
         if (index == -1) {
@@ -77,7 +77,7 @@ public class List {
         }
     }
 
-    /** Removes a CharData object from the list. [cite: 93-94] */
+    /** Removes a CharData object from the list. */
     public boolean remove(char chr) {
         Node current = first;
         Node prev = null;
@@ -97,7 +97,7 @@ public class List {
         return false;
     }
 
-    /** Returns the CharData object at the specified index. [cite: 95-96] */
+    /** Returns the CharData object at the specified index. */
     public CharData get(int index) {
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException();
@@ -109,12 +109,14 @@ public class List {
         return current.cp;
     }
 
-    /** Returns an iterator over the elements in this list. [cite: 97] */
+    /** Returns an iterator over the elements in this list. */
     public ListIterator listIterator(int index) {
         if (index < 0 || index > size) return null;
         Node current = first;
         for (int i = 0; i < index; i++) {
-            if (current != null) current = current.next;
+            if (current != null) {
+                current = current.next;
+            }
         }
         return new ListIterator(current);
     }

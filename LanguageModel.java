@@ -12,21 +12,19 @@ public class LanguageModel {
     // The random number generator used by this model. [cite: 255]
     private Random randomGenerator;
 
-    /** Constructs a language model with the given window length and seed. [cite: 256] */
     public LanguageModel(int windowLength, int seed) {
         this.windowLength = windowLength;
         randomGenerator = new Random(seed);
         CharDataMap = new HashMap<String, List>();
     }
 
-    /** Constructs a language model with the given window length. [cite: 256] */
     public LanguageModel(int windowLength) {
         this.windowLength = windowLength;
         randomGenerator = new Random();
         CharDataMap = new HashMap<String, List>();
     }
 
-    /** Builds a language model from the corpus. [cite: 147-154, 376-406] */
+    /** Builds a language model from the corpus. [cite: 147-154] */
     public void train(String fileName) {
         String window = "";
         char c;
@@ -39,7 +37,6 @@ public class LanguageModel {
             }
         }
 
-        // Processes the text, one character at a time. [cite: 382-399]
         while (!in.isEmpty()) {
             c = in.readChar();
             List probs = CharDataMap.get(window);
@@ -53,13 +50,12 @@ public class LanguageModel {
             window = window.substring(1) + c;
         }
 
-        // Sets the p and cp fields of all CharData objects. [cite: 401-405]
         for (List probs : CharDataMap.values()) {
             calculateProbabilities(probs);
         }
     }
 
-    /** Computes and sets probabilities (p and cp fields). [cite: 117-123] */
+    /** Computes and sets p and cp fields. [cite: 117-123] */
     void calculateProbabilities(List probs) {               
         ListIterator it = probs.listIterator(0);
         if (it == null) return;
@@ -76,13 +72,12 @@ public class LanguageModel {
 
         while (it2.hasNext()) {
             CharData cd2 = it2.next();
+            last = cd2;
             cd2.p = (double) cd2.count / total;
             cumulative += cd2.p;
             cd2.cp = cumulative;
-            last = cd2;
         }
 
-        // Ensure the last cumulative probability is exactly 1.0 [cite: 119]
         if (last != null) {
             last.cp = 1.0;
         }
@@ -90,32 +85,34 @@ public class LanguageModel {
 
     /** Returns a random character using Monte Carlo technique. [cite: 128-144] */
     char getRandomChar(List probs) {
-        double r = randomGenerator.nextDouble(); // [cite: 259]
+        double r = randomGenerator.nextDouble();
         ListIterator it = probs.listIterator(0);
 
         CharData cd = null;
         while (it.hasNext()) {
             cd = it.next();
-            if (cd.cp > r) { // [cite: 140]
+            if (cd.cp > r) {
                 return cd.chr;
             }
         }
         return cd.chr;
     }
 
-    /** Generates a random text of the specified length. [cite: 204-211, 230-233] */
+    /** Generates a random text. [cite: 204-211] */
     public String generate(String initialText, int textLength) {
-        if (initialText.length() < windowLength) { // [cite: 227-228]
+        if (initialText.length() < windowLength) {
             return initialText;
         }
 
         StringBuilder generated = new StringBuilder(initialText);
+        // תיקון: מייצר textLength תווים נוספים מעבר לטקסט ההתחלתי
+        int targetLength = initialText.length() + textLength;
 
-        while (generated.length() < textLength) {
+        while (generated.length() < targetLength) {
             String window = generated.substring(generated.length() - windowLength);
             List probs = CharDataMap.get(window);
             
-            if (probs == null) { // [cite: 233]
+            if (probs == null) {
                 break;
             }
 
@@ -130,12 +127,11 @@ public class LanguageModel {
         StringBuilder str = new StringBuilder();
         for (String key : CharDataMap.keySet()) {
             List keyProbs = CharDataMap.get(key);
-            str.append(key).append(" : ").append(keyProbs).append("\n");
+            str.append(key + " : " + keyProbs + "\n");
         }
         return str.toString();
     }
 
-    /** Main method to run the program from command line. [cite: 262-278] */
     public static void main(String[] args) {
         int windowLength = Integer.parseInt(args[0]);
         String initialText = args[1];
@@ -147,7 +143,7 @@ public class LanguageModel {
         if (randomGeneration) {
             lm = new LanguageModel(windowLength);
         } else {
-            lm = new LanguageModel(windowLength, 20); // [cite: 256]
+            lm = new LanguageModel(windowLength, 20);
         }
 
         lm.train(fileName);
